@@ -11,20 +11,17 @@ namespace AT_Utils
 {
     public abstract class PartUpdaterBase : PartModule
     {
-        protected Part base_part;
+        protected Part base_part => part.partInfo?.partPrefab ?? part;
 
-        public virtual bool Init() 
-        { 
-            base_part = PartLoader.getPartInfoByName(part.partInfo.name).partPrefab; 
-            return true;
-        }
+        public virtual bool Init() => true;
 
         public abstract void SaveDefaults();
 
         public override void OnStart(StartState state)
         {
             base.OnStart(state);
-            if(Init()) SaveDefaults();
+            if(Init()) 
+                SaveDefaults();
         }
     }
 
