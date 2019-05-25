@@ -8,7 +8,6 @@
 // This code is based on Procedural Fairings plug-in by Alexey Volynskov, KzPartResizer class
 // And on ideas drawn from the TweakScale plugin
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
