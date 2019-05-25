@@ -14,77 +14,19 @@ using UnityEngine;
 
 namespace AT_Utils
 {
-    public class NodesUpdater : PartUpdater
+    public class DeprecatedPartModule : PartModule
     {
-        readonly Dictionary<string, AttachNode> orig_nodes = new Dictionary<string, AttachNode>();
-
-        public override void SaveDefaults()
-        { base_part.attachNodes.ForEach(n => orig_nodes[n.id] = n); }
-
-        public override void OnRescale(Scale scale)
+        public override void OnStart(StartState state)
         {
-            //update attach nodes and their parts
-            foreach(AttachNode node in part.attachNodes)
-            {
-                //ModuleGrappleNode adds new AttachNode on dock
-                if(!orig_nodes.ContainsKey(node.id)) continue;
-                //update node position
-                node.position = scale.ScaleVector(node.originalPosition);
-                //update node size
-                int new_size = orig_nodes[node.id].size + Mathf.RoundToInt(scale.size - scale.orig_size);
-                if(new_size < 0) new_size = 0;
-                node.size = new_size;
-                //update node breaking forces
-                node.breakingForce = orig_nodes[node.id].breakingForce * scale.absolute.quad;
-                node.breakingTorque = orig_nodes[node.id].breakingTorque * scale.absolute.quad;
-                //move the part
-                if(!scale.FirstTime)
-                    part.UpdateAttachedPartPos(node);
-            }
-            //update this surface attach node
-            if(part.srfAttachNode != null)
-            {
-                Vector3 old_position = part.srfAttachNode.position;
-                part.srfAttachNode.position = scale.ScaleVector(part.srfAttachNode.originalPosition);
-                //don't move the part at start, its position is persistant
-                if(!scale.FirstTime)
-                {
-                    Vector3 d_pos = part.transform.TransformDirection(part.srfAttachNode.position - old_position);
-                    part.transform.position -= d_pos;
-                }
-            }
-            //no need to update surface attached parts on start
-            //as their positions are persistant; less calculations
-            if(scale.FirstTime) return;
-            //update parts that are surface attached to this
-            foreach(Part child in part.children)
-            {
-                if(child.srfAttachNode != null && child.srfAttachNode.attachedPart == part)
-                {
-                    Vector3 attachedPosition = child.transform.localPosition + child.transform.localRotation * child.srfAttachNode.position;
-                    Vector3 targetPosition = scale.ScaleVectorRelative(attachedPosition);
-                    child.transform.Translate(targetPosition - attachedPosition, part.transform);
-                }
-            }
+            base.OnStart(state);
+            this.EnableModule(false);
+            part.Modules.Remove(this);
+            Destroy(this);
         }
     }
 
-    public class PropsUpdater : PartUpdater
-    {
-        public override void OnRescale(Scale scale)
-        {
-            //update CoM offset
-            part.CoMOffset = scale.ScaleVector(base_part.CoMOffset);
-            //update drag cubes
-            part.DragCubes.ForceUpdate(true, true, true);
-            //change breaking forces (if not defined in the config, set to a reasonable default)
-            part.breakingForce = Mathf.Max(22f, base_part.breakingForce * scale.absolute.quad);
-            part.breakingTorque = Mathf.Max(22f, base_part.breakingTorque * scale.absolute.quad);
-            //change other properties
-            part.explosionPotential = base_part.explosionPotential * scale.absolute.volume;
-
-        }
-    }
+    public class NodesUpdater : DeprecatedPartModule { }
+    public class PropsUpdater : DeprecatedPartModule { }
 
     /// <summary>
     /// Emitter updater. Adapted from TweakScale.
