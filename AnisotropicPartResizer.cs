@@ -137,6 +137,7 @@ namespace AT_Utils
 
         public override void SaveDefaults()
         {
+            create_updaters();
             base.SaveDefaults();
             if(orig_size < 0 || HighLogic.LoadedSceneIsEditor)
             {
@@ -149,7 +150,6 @@ namespace AT_Utils
         public override void OnStart(StartState state)
         {
             base.OnStart(state);
-            create_updaters();
             if(state == StartState.Editor) 
             {
                 //init global limits
