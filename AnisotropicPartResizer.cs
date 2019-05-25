@@ -70,8 +70,8 @@ namespace AT_Utils
         void update_model(Scale scale)
         {
             model.localScale = scale.ScaleVector(orig_local_scale);
-            this.Log("Rescale: size {}/{}, orig scale: {}, local scale: {}",
-                     size, orig_size, orig_local_scale, model.localScale);//debug
+            //this.Log("Rescale: size {}/{}, orig scale: {}, local scale: {}",
+                     //size, orig_size, orig_local_scale, model.localScale);//debug
             model.hasChanged = true;
             part.transform.hasChanged = true;
             //recalculate mass and cost
