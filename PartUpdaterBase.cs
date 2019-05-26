@@ -11,20 +11,17 @@ namespace AT_Utils
 {
     public abstract class PartUpdaterBase : PartModule
     {
-        protected Part base_part;
+        protected Part base_part => part.partInfo?.partPrefab ?? part;
 
-        public virtual bool Init() 
-        { 
-            base_part = PartLoader.getPartInfoByName(part.partInfo.name).partPrefab; 
-            return true;
-        }
+        public virtual bool Init() => true;
 
         public abstract void SaveDefaults();
 
         public override void OnStart(StartState state)
         {
             base.OnStart(state);
-            if(Init()) SaveDefaults();
+            if(Init()) 
+                SaveDefaults();
         }
     }
 
@@ -32,8 +29,8 @@ namespace AT_Utils
     {
         public uint priority = 0; // 0 is highest
 
-        public override void SaveDefaults() {}
-        public virtual void OnRescale(Scale scale) {}
+        public override void SaveDefaults() { }
+        public virtual void OnRescale(Scale scale) { }
 
         #region ModuleUpdaters
         public delegate PartUpdater Constructor(Part part);
@@ -43,9 +40,9 @@ namespace AT_Utils
         static Constructor create_constructor<UpdaterType>() where UpdaterType : PartUpdater
         { return part => part.Modules.GetModule<UpdaterType>() ?? part.AddModule(typeof(UpdaterType).Name) as PartUpdater; }
 
-        public static void RegisterUpdater<UpdaterType>() 
+        public static void RegisterUpdater<UpdaterType>()
             where UpdaterType : PartUpdater
-        { 
+        {
             string updater_name = typeof(UpdaterType).FullName;
             if(UpdatersTypes.ContainsKey(updater_name)) return;
             UpdatersTypes[updater_name] = create_constructor<UpdaterType>();
@@ -72,10 +69,10 @@ namespace AT_Utils
 
         protected readonly List<ModulePair<T>> modules = new List<ModulePair<T>>();
 
-        public override bool Init() 
+        public override bool Init()
         {
             if(!base.Init()) return false;
-            priority = 100; 
+            priority = 100;
             var m = part.Modules.GetEnumerator();
             var b = base_part.Modules.GetEnumerator();
             while(b.MoveNext() && m.MoveNext())
@@ -88,7 +85,7 @@ namespace AT_Utils
 
         protected abstract void on_rescale(ModulePair<T> mp, Scale scale);
 
-        public override void OnRescale(Scale scale) 
+        public override void OnRescale(Scale scale)
         { modules.ForEach(mp => on_rescale(mp, scale)); }
     }
 }

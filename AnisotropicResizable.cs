@@ -86,9 +86,8 @@ namespace AT_Utils
 
         protected static void setup_field(BaseField field, float minval, float maxval, float l_increment, float s_increment)
         {
-            var fe = field.uiControlEditor as UI_FloatEdit;
-            if(fe != null) 
-            { 
+            if(field.uiControlEditor is UI_FloatEdit fe)
+            {
                 fe.minValue = minval;
                 fe.maxValue = maxval;
                 fe.incrementLarge = l_increment;
