@@ -20,6 +20,14 @@ namespace AT_Utils
         [UI_FloatEdit(scene = UI_Scene.Editor, minValue = 0.5f, maxValue = 10, incrementLarge = 1.0f, incrementSmall = 0.1f, incrementSlide = 0.001f, sigFigs = 4)]
         public float size = 1.0f;
 
+        void rescale_and_brake_struts()
+        {
+            Rescale();
+            part.BreakConnectedCompoundParts();
+        }
+        protected virtual void on_size_changed(BaseField field, object value) => rescale_and_brake_struts();
+        protected override void on_aspect_changed(BaseField field, object value) => rescale_and_brake_struts();
+
         //module config
         [KSPField] public bool sizeOnly;
         [KSPField] public bool aspectOnly;
@@ -69,9 +77,10 @@ namespace AT_Utils
 
         void update_model(Scale scale)
         {
+            //this.Log("first {}, orig scale {}, old scale {}, scale {} => {}\nsize {} => {}, aspect {} => {}",
+                     //scale.FirstTime, orig_local_scale, old_local_scale, model.localScale, scale.ScaleVector(orig_local_scale),
+                     //old_size, size, old_aspect, aspect);//debug
             model.localScale = scale.ScaleVector(orig_local_scale);
-            //this.Log("Rescale: size {}/{}, orig scale: {}, local scale: {}",
-                     //size, orig_size, orig_local_scale, model.localScale);//debug
             model.hasChanged = true;
             part.transform.hasChanged = true;
             //recalculate mass and cost
@@ -168,6 +177,7 @@ namespace AT_Utils
                 else setup_field(Fields["size"], minSize, maxSize, sizeStepLarge, sizeStepSmall);
                 if(sizeOnly || minAspect.Equals(maxAspect)) Fields["aspect"].guiActiveEditor = false;
                 else setup_field(Fields["aspect"], minAspect, maxAspect, aspectStepLarge, aspectStepSmall);
+                Fields["size"].uiControlEditor.onFieldChanged = on_size_changed;
             }
             Rescale();
         }
@@ -177,11 +187,9 @@ namespace AT_Utils
             if(HighLogic.LoadedSceneIsEditor)
             {
                 if(old_local_scale != model.localScale)
-                    Rescale();
-                else if(unequal(old_size, size) || unequal(old_aspect, aspect))
                 {
+                    this.Log("Model local scale changed");
                     Rescale();
-                    part.BreakConnectedCompoundParts();
                 }
             }
         }
