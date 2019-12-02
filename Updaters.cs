@@ -238,26 +238,28 @@ namespace AT_Utils
 
     public class JettisonUpdater : ModuleUpdater<ModuleJettison>
     {
-        public override void SaveDefaults()
+        private void update_fairings(ModulePair<ModuleJettison> mp, Scale scale)
         {
-            base.SaveDefaults();
-            foreach(var mp in modules)
-                mp.orig_data["local_scale"] = mp.module.jettisonTransform.localScale;
+            if(mp.module.jettisonTransform == null)
+                return;
+            var p = mp.module.jettisonTransform.parent.gameObject.GetComponent<Part>();
+            if(p == null || p == mp.module.part)
+                return;
+            if(!mp.orig_data.TryGetValue("local_scale", out var orig_scale)
+               || !(orig_scale is Vector3))
+            {
+                orig_scale = mp.module.jettisonTransform.localScale;
+                mp.orig_data["local_scale"] = orig_scale;
+            }
+            mp.module.jettisonTransform.localScale = scale.ScaleVector((Vector3)orig_scale);
         }
 
         protected override void on_rescale(ModulePair<ModuleJettison> mp, Scale scale)
         {
-            mp.module.jettisonedObjectMass = mp.base_module.jettisonedObjectMass * scale.absolute.volume;
+            mp.module.jettisonedObjectMass =
+                mp.base_module.jettisonedObjectMass * scale.absolute.volume;
             mp.module.jettisonForce = mp.base_module.jettisonForce * scale.absolute.volume;
-            if(mp.module.jettisonTransform != null)
-            {
-                var p = mp.module.jettisonTransform.parent.gameObject.GetComponent<Part>();
-                if(p == null || p == mp.module.part) return;
-                object orig_scale;
-                if(!mp.orig_data.TryGetValue("local_scale", out orig_scale) ||
-                   !(orig_scale is Vector3)) return;
-                mp.module.jettisonTransform.localScale = scale.ScaleVector((Vector3)orig_scale);
-            }
+            update_fairings(mp, scale);
         }
     }
 
