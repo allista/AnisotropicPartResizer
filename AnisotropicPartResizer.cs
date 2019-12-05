@@ -65,6 +65,25 @@ namespace AT_Utils
 
         readonly Dictionary<string, AttachNode> orig_nodes = new Dictionary<string, AttachNode>();
 
+        private float get_scaled_attr(Vector4 specificAttr, float scale, float rel_aspect) =>
+            ((specificAttr.x * scale + specificAttr.y) * scale + specificAttr.z) * scale * rel_aspect + specificAttr.w;
+
+        protected override void update_orig_mass_and_cost()
+        {
+            orig_mass = get_scaled_attr(specificMass, 1, 1);
+            orig_cost = get_scaled_attr(specificCost, 1, 1);
+        }
+
+        protected override void update_orig_attrs()
+        {
+            if(orig_size < 0 || HighLogic.LoadedSceneIsEditor)
+            {
+                var resizer = base_part.Modules.GetModule<AnisotropicPartResizer>();
+                orig_size = resizer != null ? resizer.size : size;
+            }
+            base.update_orig_attrs();
+        }
+
         protected override void prepare_model()
         {
             if(prefab_model == null) return;
@@ -84,8 +103,8 @@ namespace AT_Utils
             model.hasChanged = true;
             part.transform.hasChanged = true;
             //recalculate mass and cost
-            mass = ((specificMass.x * scale + specificMass.y) * scale + specificMass.z) * scale * scale.aspect + specificMass.w;
-            cost = ((specificCost.x * scale + specificCost.y) * scale + specificCost.z) * scale * scale.aspect + specificCost.w;
+            mass = get_scaled_attr(specificMass, scale, scale.aspect);
+            cost = get_scaled_attr(specificCost, scale, scale.aspect);
             //update CoM offset
             part.CoMOffset = scale.ScaleVector(base_part.CoMOffset);
             //change breaking forces (if not defined in the config, set to a reasonable default)
@@ -146,14 +165,9 @@ namespace AT_Utils
 
         public override void SaveDefaults()
         {
+            old_size = size;
             create_updaters();
             base.SaveDefaults();
-            if(orig_size < 0 || HighLogic.LoadedSceneIsEditor)
-            {
-                var resizer = base_part.Modules.GetModule<AnisotropicPartResizer>();
-                orig_size = resizer != null ? resizer.size : size;
-            }
-            old_size = size;
         }
 
         public override void OnStart(StartState state)
