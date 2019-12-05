@@ -41,7 +41,7 @@ namespace AT_Utils
         Vector3 old_local_scale;
         float old_size = -1;
 
-        public Scale GetScale() => new Scale(size, old_size, orig_size, aspect, old_aspect, just_loaded);
+        public Scale GetScale() => new Scale(size, old_size, orig_size, aspect, old_aspect, orig_aspect, just_loaded);
 
         #region PartUpdaters
         readonly List<PartUpdater> updaters = new List<PartUpdater>();

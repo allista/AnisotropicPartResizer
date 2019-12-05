@@ -42,13 +42,21 @@ namespace AT_Utils
         public float orig_size { get; private set; }
         public float aspect { get { return absolute.aspect; } }
 
-        public Scale(float size, float old_size, float orig_size, float aspect, float old_aspect, bool first_time)
-        { 
-            this.size      = size; 
-            this.orig_size = orig_size; 
-            absolute       = new SimpleScale(size/orig_size, aspect);
-            relative       = new SimpleScale(size/old_size, aspect/old_aspect);
-            FirstTime      = first_time;
+        public Scale(
+            float size,
+            float old_size,
+            float orig_size,
+            float aspect,
+            float old_aspect,
+            float orig_aspect,
+            bool first_time
+        )
+        {
+            this.size = size;
+            this.orig_size = orig_size;
+            absolute = new SimpleScale(size / orig_size, aspect / orig_aspect);
+            relative = new SimpleScale(size / old_size, aspect / old_aspect);
+            FirstTime = first_time;
         }
 
         public static Vector3 ScaleVector(Vector3 v, float scale, float aspect)
