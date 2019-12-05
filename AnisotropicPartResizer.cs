@@ -220,6 +220,7 @@ namespace AT_Utils
             old_aspect = aspect;
             old_local_scale = model.localScale;
             Utils.UpdateEditorGUI();
+            part.UpdatePartMenu();
             if(HighLogic.LoadedSceneIsFlight)
                 StartCoroutine(CallbackUtil.DelayedCallback(1, UpdateDragCube));
             just_loaded = false;
