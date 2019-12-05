@@ -59,9 +59,9 @@ namespace AT_Utils
             } 
         }
 
-        protected bool  just_loaded = true;
         public float cost, orig_cost;
         public float mass, orig_mass;
+        protected bool just_loaded = true;
 
         protected abstract void prepare_model();
 
