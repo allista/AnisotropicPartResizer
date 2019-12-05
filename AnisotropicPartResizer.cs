@@ -108,8 +108,8 @@ namespace AT_Utils
             //update CoM offset
             part.CoMOffset = scale.ScaleVector(base_part.CoMOffset);
             //change breaking forces (if not defined in the config, set to a reasonable default)
-            part.breakingForce = Mathf.Max(22f, base_part.breakingForce * scale.absolute.quad);
-            part.breakingTorque = Mathf.Max(22f, base_part.breakingTorque * scale.absolute.quad);
+            part.breakingForce = Mathf.Max(50000f, base_part.breakingForce * scale.absolute.quad);
+            part.breakingTorque = Mathf.Max(50000f, base_part.breakingTorque * scale.absolute.quad);
             //change other properties
             part.explosionPotential = base_part.explosionPotential * scale.absolute.volume;
             //move attach nodes and attached parts
