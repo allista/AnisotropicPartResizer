@@ -59,9 +59,9 @@ namespace AT_Utils
             } 
         }
 
-        public    float cost;
-        public    float mass;
-        protected bool  just_loaded = true;
+        public float cost, orig_cost;
+        public float mass, orig_mass;
+        protected bool just_loaded = true;
 
         protected abstract void prepare_model();
 
@@ -97,10 +97,6 @@ namespace AT_Utils
         }
         #endregion
 
-        protected const float eps = 1e-5f;
-        protected static bool unequal(float f1, float f2)
-        { return Mathf.Abs(f1-f2) > eps; }
-
         public void UpdateGUI(ShipConstruct ship)
         { 
             if(isActiveAndEnabled)
@@ -114,15 +110,22 @@ namespace AT_Utils
         }
         void OnDestroy() { GameEvents.onEditorShipModified.Remove(UpdateGUI); }
 
-        public override void SaveDefaults()
+        protected abstract void update_orig_mass_and_cost();
+        protected virtual void update_orig_attrs()
         {
-            prepare_model();
             if(orig_aspect < 0 || HighLogic.LoadedSceneIsEditor)
             {
                 var resizer = base_part.Modules.GetModule<AnisotropicResizableBase>();
                 orig_aspect = resizer != null ? resizer.aspect : aspect;
             }
+        }
+        
+        public override void SaveDefaults()
+        {
             old_aspect = aspect;
+            update_orig_attrs();
+            update_orig_mass_and_cost();
+            prepare_model();
         }
 
         public override void OnStart(StartState state)
@@ -154,11 +157,17 @@ namespace AT_Utils
         }
 
         #region IPart*Modifiers
-        public virtual float GetModuleCost(float defaultCost, ModifierStagingSituation sit) { return cost-defaultCost; }
-        public virtual ModifierChangeWhen GetModuleCostChangeWhen() { return ModifierChangeWhen.CONSTANTLY; }
+        public virtual float GetModuleCost(float defaultCost, ModifierStagingSituation sit) =>
+            cost - orig_cost;
 
-        public virtual float GetModuleMass(float defaultMass, ModifierStagingSituation sit) { return mass-defaultMass; }
-        public virtual ModifierChangeWhen GetModuleMassChangeWhen() { return ModifierChangeWhen.CONSTANTLY; }
+        public virtual ModifierChangeWhen GetModuleCostChangeWhen() =>
+            ModifierChangeWhen.CONSTANTLY;
+
+        public virtual float GetModuleMass(float defaultMass, ModifierStagingSituation sit) =>
+            mass - orig_mass;
+
+        public virtual ModifierChangeWhen GetModuleMassChangeWhen() =>
+            ModifierChangeWhen.CONSTANTLY;
         #endregion
     }
 }

@@ -86,22 +86,49 @@ namespace AT_Utils
         }
     }
 
-    public class ResourcesUpdater : PartUpdater
+    public class ResourcesUpdater : PartUpdater, IPartCostModifier
     {
+        private readonly HashSet<int> baseResources = new HashSet<int>();
+        private float resourcesCost, baseResourcesCost;
+
+        public override void SaveDefaults()
+        {
+            base.SaveDefaults();
+            resourcesCost = 0;
+            baseResourcesCost = 0;
+            baseResources.Clear();
+            foreach(var resource in base_part.Resources)
+            {
+                var cost = (float)resource.maxAmount * resource.info.unitCost;
+                baseResources.Add(resource.info.id);
+                baseResourcesCost += cost;
+                resourcesCost += cost;
+            }
+        }
+
         public override void OnRescale(Scale scale)
         {
             //no need to update resources on start
-            //as they are persistant; less calculations
-            if(scale.FirstTime) return;
+            //as they are persistent; less calculations
+            if(scale.FirstTime)
+                return;
+            resourcesCost = 0;
             foreach(PartResource r in part.Resources)
             {
-                var surface = r.resourceName == "AblativeShielding" ||
-                    r.resourceName == "Ablator";
-                var s = surface ?
-                    scale.relative.quad : scale.relative.volume;
-                r.amount *= s; r.maxAmount *= s;
+                if(!baseResources.Contains(r.info.id))
+                    continue;
+                var surface = r.resourceName == "AblativeShielding" || r.resourceName == "Ablator";
+                var s = surface ? scale.relative.quad : scale.relative.volume;
+                r.maxAmount *= s;
+                r.amount *= s;
+                resourcesCost += (float)r.maxAmount * r.info.unitCost;
             }
         }
+
+        public float GetModuleCost(float defaultCost, ModifierStagingSituation sit) =>
+            resourcesCost - baseResourcesCost;
+
+        public ModifierChangeWhen GetModuleCostChangeWhen() => ModifierChangeWhen.CONSTANTLY;
     }
 
     public class RCS_Updater : ModuleUpdater<ModuleRCS>

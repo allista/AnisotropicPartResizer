@@ -14,12 +14,12 @@ namespace AT_Utils
     {
         public class SimpleScale
         {
-            public float scale  { get; private set; }
-            public float aspect { get; private set; }
-            public float sqrt { get; private set; }
-            public float quad { get; private set; }
-            public float cube { get; private set; }
-            public float volume { get; private set; }
+            public readonly float scale;
+            public readonly float aspect;
+            public readonly float sqrt;
+            public readonly float quad;
+            public readonly float cube;
+            public readonly float volume;
 
             public SimpleScale(float scale, float aspect)
             { 
@@ -34,13 +34,13 @@ namespace AT_Utils
             public static implicit operator float(SimpleScale s) { return s.scale; }
         }
 
-        readonly public SimpleScale absolute;
-        readonly public SimpleScale relative;
-        readonly public bool FirstTime;
+        public readonly SimpleScale absolute;
+        public readonly SimpleScale relative;
+        public readonly bool FirstTime;
 
-        public float size { get; private set; }
-        public float orig_size { get; private set; }
-        public float aspect { get { return absolute.aspect; } }
+        public readonly float size;
+        public readonly float orig_size;
+        public float aspect => absolute.aspect;
 
         public Scale(
             float size,
