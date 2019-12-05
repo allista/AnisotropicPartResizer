@@ -97,10 +97,6 @@ namespace AT_Utils
         }
         #endregion
 
-        protected const float eps = 1e-5f;
-        protected static bool unequal(float f1, float f2)
-        { return Mathf.Abs(f1-f2) > eps; }
-
         public void UpdateGUI(ShipConstruct ship)
         { 
             if(isActiveAndEnabled)
