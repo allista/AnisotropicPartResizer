@@ -297,4 +297,14 @@ namespace AT_Utils
             mp.module.ctrlSurfaceArea = mp.base_module.ctrlSurfaceArea * scale.absolute.quad;
         }
     }
+
+    public class ATMagneticDamperUpdater : ModuleUpdater<ATMagneticDamper>
+    {
+        protected override void on_rescale(ModulePair<ATMagneticDamper> mp, Scale scale)
+        {
+            mp.module.MaxForce = mp.base_module.MaxForce * scale.absolute;
+            mp.module.MaxEnergyConsumption = mp.base_module.MaxEnergyConsumption * scale.absolute;
+            mp.module.IdleEnergyConsumption = mp.base_module.IdleEnergyConsumption * scale.absolute;
+        }
+    }
 }
