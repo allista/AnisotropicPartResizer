@@ -302,9 +302,10 @@ namespace AT_Utils
     {
         protected override void on_rescale(ModulePair<ATMagneticDamper> mp, Scale scale)
         {
-            mp.module.MaxForce = mp.base_module.MaxForce * scale.absolute;
-            mp.module.MaxEnergyConsumption = mp.base_module.MaxEnergyConsumption * scale.absolute;
-            mp.module.IdleEnergyConsumption = mp.base_module.IdleEnergyConsumption * scale.absolute;
+            var s = scale.absolute.quad * scale.absolute.aspect;
+            mp.module.MaxForce = mp.base_module.MaxForce * s;
+            mp.module.MaxEnergyConsumption = mp.base_module.MaxEnergyConsumption * s;
+            mp.module.IdleEnergyConsumption = mp.base_module.IdleEnergyConsumption * s;
         }
     }
 }
