@@ -14,7 +14,7 @@ namespace AT_Utils
         [KSPField(isPersistant=true, guiActiveEditor=true, guiName="Aspect", guiFormat="S4")]
         [UI_FloatEdit(scene=UI_Scene.Editor, minValue=0.5f, maxValue=10, incrementLarge=1.0f, incrementSmall=0.1f, incrementSlide=0.001f, sigFigs = 4)]
         public float aspect = 1.0f;
-        protected abstract void on_aspect_changed(BaseField field, object value);
+        protected abstract void on_aspect_changed(object value);
 
         [KSPField(isPersistant=false, guiActiveEditor=true, guiName="Mass")] 
         public string MassDisplay;
@@ -108,7 +108,12 @@ namespace AT_Utils
             base.OnAwake();
             GameEvents.onEditorShipModified.Add(UpdateGUI);
         }
-        void OnDestroy() { GameEvents.onEditorShipModified.Remove(UpdateGUI); }
+
+        protected virtual void OnDestroy()
+        {
+            Fields[nameof(aspect)].OnValueModified -= on_aspect_changed;
+            GameEvents.onEditorShipModified.Remove(UpdateGUI);
+        }
 
         protected abstract void update_orig_mass_and_cost();
         protected virtual void update_orig_attrs()
@@ -143,7 +148,7 @@ namespace AT_Utils
                     init_limit(limits.minAspect, ref minAspect, Mathf.Min(aspect, orig_aspect));
                     init_limit(limits.maxAspect, ref maxAspect, Mathf.Max(aspect, orig_aspect));
                 }
-                Fields["aspect"].uiControlEditor.onFieldChanged = on_aspect_changed;
+                Fields[nameof(aspect)].OnValueModified += on_aspect_changed;
             }
             else 
                 UpdateDragCube();

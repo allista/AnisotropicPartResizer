@@ -25,8 +25,8 @@ namespace AT_Utils
             Rescale();
             part.BreakConnectedCompoundParts();
         }
-        protected virtual void on_size_changed(BaseField field, object value) => rescale_and_brake_struts();
-        protected override void on_aspect_changed(BaseField field, object value) => rescale_and_brake_struts();
+        protected virtual void on_size_changed(object value) => rescale_and_brake_struts();
+        protected override void on_aspect_changed(object value) => rescale_and_brake_struts();
 
         //module config
         [KSPField] public bool sizeOnly;
@@ -191,9 +191,16 @@ namespace AT_Utils
                 else setup_field(Fields["size"], minSize, maxSize, sizeStepLarge, sizeStepSmall);
                 if(sizeOnly || minAspect.Equals(maxAspect)) Fields["aspect"].guiActiveEditor = false;
                 else setup_field(Fields["aspect"], minAspect, maxAspect, aspectStepLarge, aspectStepSmall);
-                Fields["size"].uiControlEditor.onFieldChanged = on_size_changed;
+                var sizeField = Fields[nameof(size)];
+                sizeField.OnValueModified += on_size_changed;
             }
             Rescale();
+        }
+
+        protected override void OnDestroy()
+        {
+            Fields[nameof(size)].OnValueModified -= on_size_changed;
+            base.OnDestroy();
         }
 
         public void Update()
