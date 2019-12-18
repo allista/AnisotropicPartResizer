@@ -186,12 +186,26 @@ namespace AT_Utils
                     init_limit(limits.maxSize, ref maxSize, Mathf.Max(size, orig_size));
                 }
                 //setup sliders
-                if(sizeOnly && aspectOnly) aspectOnly = false;
-                if(aspectOnly || minSize.Equals(maxSize)) Fields["size"].guiActiveEditor = false;
-                else setup_field(Fields["size"], minSize, maxSize, sizeStepLarge, sizeStepSmall);
-                if(sizeOnly || minAspect.Equals(maxAspect)) Fields["aspect"].guiActiveEditor = false;
-                else setup_field(Fields["aspect"], minAspect, maxAspect, aspectStepLarge, aspectStepSmall);
+                var aspectField = Fields[nameof(aspect)];
                 var sizeField = Fields[nameof(size)];
+                if(sizeOnly && aspectOnly)
+                    aspectOnly = false;
+                if(aspectOnly || minSize.Equals(maxSize))
+                    sizeField.guiActiveEditor = false;
+                else
+                    setup_field(sizeField,
+                        minSize,
+                        maxSize,
+                        sizeStepLarge,
+                        sizeStepSmall);
+                if(sizeOnly || minAspect.Equals(maxAspect))
+                    aspectField.guiActiveEditor = false;
+                else
+                    setup_field(aspectField,
+                        minAspect,
+                        maxAspect,
+                        aspectStepLarge,
+                        aspectStepSmall);
                 sizeField.OnValueModified += on_size_changed;
             }
             Rescale();
