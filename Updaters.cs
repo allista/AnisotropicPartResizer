@@ -86,22 +86,49 @@ namespace AT_Utils
         }
     }
 
-    public class ResourcesUpdater : PartUpdater
+    public class ResourcesUpdater : PartUpdater, IPartCostModifier
     {
+        private readonly HashSet<int> baseResources = new HashSet<int>();
+        private float resourcesCost, baseResourcesCost;
+
+        public override void SaveDefaults()
+        {
+            base.SaveDefaults();
+            resourcesCost = 0;
+            baseResourcesCost = 0;
+            baseResources.Clear();
+            foreach(var resource in base_part.Resources)
+            {
+                var cost = (float)resource.maxAmount * resource.info.unitCost;
+                baseResources.Add(resource.info.id);
+                baseResourcesCost += cost;
+                resourcesCost += cost;
+            }
+        }
+
         public override void OnRescale(Scale scale)
         {
             //no need to update resources on start
-            //as they are persistant; less calculations
-            if(scale.FirstTime) return;
+            //as they are persistent; less calculations
+            if(scale.FirstTime)
+                return;
+            resourcesCost = 0;
             foreach(PartResource r in part.Resources)
             {
-                var surface = r.resourceName == "AblativeShielding" ||
-                    r.resourceName == "Ablator";
-                var s = surface ?
-                    scale.relative.quad : scale.relative.volume;
-                r.amount *= s; r.maxAmount *= s;
+                if(!baseResources.Contains(r.info.id))
+                    continue;
+                var surface = r.resourceName == "AblativeShielding" || r.resourceName == "Ablator";
+                var s = surface ? scale.relative.quad : scale.relative.volume;
+                r.maxAmount *= s;
+                r.amount *= s;
+                resourcesCost += (float)r.maxAmount * r.info.unitCost;
             }
         }
+
+        public float GetModuleCost(float defaultCost, ModifierStagingSituation sit) =>
+            resourcesCost - baseResourcesCost;
+
+        public ModifierChangeWhen GetModuleCostChangeWhen() => ModifierChangeWhen.CONSTANTLY;
     }
 
     public class RCS_Updater : ModuleUpdater<ModuleRCS>
@@ -238,26 +265,28 @@ namespace AT_Utils
 
     public class JettisonUpdater : ModuleUpdater<ModuleJettison>
     {
-        public override void SaveDefaults()
+        private void update_fairings(ModulePair<ModuleJettison> mp, Scale scale)
         {
-            base.SaveDefaults();
-            foreach(var mp in modules)
-                mp.orig_data["local_scale"] = mp.module.jettisonTransform.localScale;
+            if(mp.module.jettisonTransform == null)
+                return;
+            var p = mp.module.jettisonTransform.parent.gameObject.GetComponent<Part>();
+            if(p == null || p == mp.module.part)
+                return;
+            if(!mp.orig_data.TryGetValue("local_scale", out var orig_scale)
+               || !(orig_scale is Vector3))
+            {
+                orig_scale = mp.module.jettisonTransform.localScale;
+                mp.orig_data["local_scale"] = orig_scale;
+            }
+            mp.module.jettisonTransform.localScale = scale.ScaleVector((Vector3)orig_scale);
         }
 
         protected override void on_rescale(ModulePair<ModuleJettison> mp, Scale scale)
         {
-            mp.module.jettisonedObjectMass = mp.base_module.jettisonedObjectMass * scale.absolute.volume;
+            mp.module.jettisonedObjectMass =
+                mp.base_module.jettisonedObjectMass * scale.absolute.volume;
             mp.module.jettisonForce = mp.base_module.jettisonForce * scale.absolute.volume;
-            if(mp.module.jettisonTransform != null)
-            {
-                var p = mp.module.jettisonTransform.parent.gameObject.GetComponent<Part>();
-                if(p == null || p == mp.module.part) return;
-                object orig_scale;
-                if(!mp.orig_data.TryGetValue("local_scale", out orig_scale) ||
-                   !(orig_scale is Vector3)) return;
-                mp.module.jettisonTransform.localScale = scale.ScaleVector((Vector3)orig_scale);
-            }
+            update_fairings(mp, scale);
         }
     }
 
@@ -266,6 +295,17 @@ namespace AT_Utils
         protected override void on_rescale(ModulePair<ModuleControlSurface> mp, Scale scale)
         {
             mp.module.ctrlSurfaceArea = mp.base_module.ctrlSurfaceArea * scale.absolute.quad;
+        }
+    }
+
+    public class ATMagneticDamperUpdater : ModuleUpdater<ATMagneticDamper>
+    {
+        protected override void on_rescale(ModulePair<ATMagneticDamper> mp, Scale scale)
+        {
+            var s = scale.absolute.quad * scale.absolute.aspect;
+            mp.module.MaxForce = mp.base_module.MaxForce * s;
+            mp.module.MaxEnergyConsumption = mp.base_module.MaxEnergyConsumption * s;
+            mp.module.IdleEnergyConsumption = mp.base_module.IdleEnergyConsumption * s;
         }
     }
 }

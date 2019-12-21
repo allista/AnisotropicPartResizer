@@ -80,6 +80,8 @@ namespace AT_Utils
                 if(b.Current is T && m.Current is T)
                     modules.Add(new ModulePair<T>(b.Current as T, m.Current as T));
             }
+            m.Dispose();
+            b.Dispose();
             return modules.Count > 0;
         }
 

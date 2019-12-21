@@ -25,8 +25,8 @@ namespace AT_Utils
             Rescale();
             part.BreakConnectedCompoundParts();
         }
-        protected virtual void on_size_changed(BaseField field, object value) => rescale_and_brake_struts();
-        protected override void on_aspect_changed(BaseField field, object value) => rescale_and_brake_struts();
+        protected virtual void on_size_changed(object value) => rescale_and_brake_struts();
+        protected override void on_aspect_changed(object value) => rescale_and_brake_struts();
 
         //module config
         [KSPField] public bool sizeOnly;
@@ -41,7 +41,7 @@ namespace AT_Utils
         Vector3 old_local_scale;
         float old_size = -1;
 
-        public Scale GetScale() => new Scale(size, old_size, orig_size, aspect, old_aspect, just_loaded);
+        public Scale GetScale() => new Scale(size, old_size, orig_size, aspect, old_aspect, orig_aspect, just_loaded);
 
         #region PartUpdaters
         readonly List<PartUpdater> updaters = new List<PartUpdater>();
@@ -65,6 +65,25 @@ namespace AT_Utils
 
         readonly Dictionary<string, AttachNode> orig_nodes = new Dictionary<string, AttachNode>();
 
+        private float get_scaled_attr(Vector4 specificAttr, float scale, float rel_aspect) =>
+            ((specificAttr.x * scale + specificAttr.y) * scale + specificAttr.z) * scale * rel_aspect + specificAttr.w;
+
+        protected override void update_orig_mass_and_cost()
+        {
+            orig_mass = get_scaled_attr(specificMass, 1, 1);
+            orig_cost = get_scaled_attr(specificCost, 1, 1);
+        }
+
+        protected override void update_orig_attrs()
+        {
+            if(orig_size < 0 || HighLogic.LoadedSceneIsEditor)
+            {
+                var resizer = base_part.Modules.GetModule<AnisotropicPartResizer>();
+                orig_size = resizer != null ? resizer.size : size;
+            }
+            base.update_orig_attrs();
+        }
+
         protected override void prepare_model()
         {
             if(prefab_model == null) return;
@@ -84,13 +103,13 @@ namespace AT_Utils
             model.hasChanged = true;
             part.transform.hasChanged = true;
             //recalculate mass and cost
-            mass = ((specificMass.x * scale + specificMass.y) * scale + specificMass.z) * scale * scale.aspect + specificMass.w;
-            cost = ((specificCost.x * scale + specificCost.y) * scale + specificCost.z) * scale * scale.aspect + specificCost.w;
+            mass = get_scaled_attr(specificMass, scale, scale.aspect);
+            cost = get_scaled_attr(specificCost, scale, scale.aspect);
             //update CoM offset
             part.CoMOffset = scale.ScaleVector(base_part.CoMOffset);
             //change breaking forces (if not defined in the config, set to a reasonable default)
-            part.breakingForce = Mathf.Max(22f, base_part.breakingForce * scale.absolute.quad);
-            part.breakingTorque = Mathf.Max(22f, base_part.breakingTorque * scale.absolute.quad);
+            part.breakingForce = Mathf.Max(50000f, base_part.breakingForce * scale.absolute.quad);
+            part.breakingTorque = Mathf.Max(50000f, base_part.breakingTorque * scale.absolute.quad);
             //change other properties
             part.explosionPotential = base_part.explosionPotential * scale.absolute.volume;
             //move attach nodes and attached parts
@@ -146,14 +165,9 @@ namespace AT_Utils
 
         public override void SaveDefaults()
         {
+            old_size = size;
             create_updaters();
             base.SaveDefaults();
-            if(orig_size < 0 || HighLogic.LoadedSceneIsEditor)
-            {
-                var resizer = base_part.Modules.GetModule<AnisotropicPartResizer>();
-                orig_size = resizer != null ? resizer.size : size;
-            }
-            old_size = size;
         }
 
         public override void OnStart(StartState state)
@@ -172,14 +186,35 @@ namespace AT_Utils
                     init_limit(limits.maxSize, ref maxSize, Mathf.Max(size, orig_size));
                 }
                 //setup sliders
-                if(sizeOnly && aspectOnly) aspectOnly = false;
-                if(aspectOnly || minSize.Equals(maxSize)) Fields["size"].guiActiveEditor = false;
-                else setup_field(Fields["size"], minSize, maxSize, sizeStepLarge, sizeStepSmall);
-                if(sizeOnly || minAspect.Equals(maxAspect)) Fields["aspect"].guiActiveEditor = false;
-                else setup_field(Fields["aspect"], minAspect, maxAspect, aspectStepLarge, aspectStepSmall);
-                Fields["size"].uiControlEditor.onFieldChanged = on_size_changed;
+                var aspectField = Fields[nameof(aspect)];
+                var sizeField = Fields[nameof(size)];
+                if(sizeOnly && aspectOnly)
+                    aspectOnly = false;
+                if(aspectOnly || minSize.Equals(maxSize))
+                    sizeField.guiActiveEditor = false;
+                else
+                    setup_field(sizeField,
+                        minSize,
+                        maxSize,
+                        sizeStepLarge,
+                        sizeStepSmall);
+                if(sizeOnly || minAspect.Equals(maxAspect))
+                    aspectField.guiActiveEditor = false;
+                else
+                    setup_field(aspectField,
+                        minAspect,
+                        maxAspect,
+                        aspectStepLarge,
+                        aspectStepSmall);
+                sizeField.OnValueModified += on_size_changed;
             }
             Rescale();
+        }
+
+        protected override void OnDestroy()
+        {
+            Fields[nameof(size)].OnValueModified -= on_size_changed;
+            base.OnDestroy();
         }
 
         public void Update()
@@ -205,7 +240,6 @@ namespace AT_Utils
             old_size = size;
             old_aspect = aspect;
             old_local_scale = model.localScale;
-            Utils.UpdateEditorGUI();
             if(HighLogic.LoadedSceneIsFlight)
                 StartCoroutine(CallbackUtil.DelayedCallback(1, UpdateDragCube));
             just_loaded = false;
