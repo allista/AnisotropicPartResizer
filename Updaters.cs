@@ -149,7 +149,11 @@ namespace AT_Utils
                 .Trim(", ".ToCharArray());
         }
 
-        public override void OnStart(StartState state) { base.OnStart(state); thrustDisplay = all_thrusts(); }
+        public override void OnStart(StartState state)
+        {
+            base.OnStart(state);
+            thrustDisplay = all_thrusts();
+        }
 
         public override void OnRescale(Scale scale)
         {
@@ -259,7 +263,11 @@ namespace AT_Utils
                 .Trim(", ".ToCharArray());
         }
 
-        public override void OnStart(StartState state) { base.OnStart(state); thrustDisplay = all_thrusts(); }
+        public override void OnStart(StartState state)
+        {
+            base.OnStart(state);
+            thrustDisplay = all_thrusts();
+        }
 
         public override void OnRescale(Scale scale)
         {

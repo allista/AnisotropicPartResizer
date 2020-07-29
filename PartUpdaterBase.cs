@@ -11,7 +11,15 @@ namespace AT_Utils
 {
     public abstract class PartUpdaterBase : PartModule
     {
-        protected Part base_part => part.partInfo?.partPrefab ?? part;
+        protected Part base_part
+        {
+            get
+            {
+                if(part.partInfo != null && part.partInfo.partPrefab != null)
+                    return part.partInfo.partPrefab;
+                return part;
+            }
+        }
 
         protected bool initialized { get; private set; }
 
@@ -39,7 +47,8 @@ namespace AT_Utils
         public uint priority = 0; // 0 is highest
 
         public override void SaveDefaults() { }
-        public virtual void OnRescale(Scale scale) { }
+
+        public abstract void OnRescale(Scale scale);
 
         #region ModuleUpdaters
         public delegate PartUpdater Constructor(Part part);
@@ -80,15 +89,16 @@ namespace AT_Utils
 
         public override bool Init()
         {
-            if(!base.Init()) return false;
+            if(!base.Init())
+                return false;
             priority = 100;
             modules.Clear();
             var m = part.Modules.GetEnumerator();
             var b = base_part.Modules.GetEnumerator();
             while(b.MoveNext() && m.MoveNext())
             {
-                if(b.Current is T && m.Current is T)
-                    modules.Add(new ModulePair<T>(b.Current as T, m.Current as T));
+                if(b.Current is T bT && m.Current is T mT)
+                    modules.Add(new ModulePair<T>(bT, mT));
             }
             m.Dispose();
             b.Dispose();

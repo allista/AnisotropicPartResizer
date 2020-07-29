@@ -18,7 +18,8 @@ namespace AT_Utils
         [UsedImplicitly] private FloatFieldWatcher aspectWatcher;
         protected abstract void on_aspect_changed();
 
-        [KSPField(isPersistant=false, guiActiveEditor=true, guiName="Mass")] 
+        [UsedImplicitly]
+        [KSPField(isPersistant=false, guiActiveEditor=true, guiName="Mass")]
         public string MassDisplay;
 
         //module config

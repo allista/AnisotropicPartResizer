@@ -233,7 +233,7 @@ namespace AT_Utils
             {
                 if(old_local_scale != model.localScale)
                 {
-                    this.Log("Model local scale changed");
+                    this.Debug("Model local scale changed");
                     Rescale();
                 }
             }
