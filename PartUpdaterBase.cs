@@ -29,6 +29,8 @@ namespace AT_Utils
                 SaveDefaults();
                 initialized = true;
             }
+            else
+                this.EnableModule(false);
         }
     }
 
@@ -95,7 +97,10 @@ namespace AT_Utils
         protected abstract void on_rescale(ModulePair<T> mp, Scale scale);
 
         public override void OnRescale(Scale scale)
-        { modules.ForEach(mp => on_rescale(mp, scale)); }
+        {
+            if(enabled)
+                modules.ForEach(mp => on_rescale(mp, scale));
+        }
     }
 }
 

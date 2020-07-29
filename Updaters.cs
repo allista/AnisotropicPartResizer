@@ -79,6 +79,8 @@ namespace AT_Utils
 
         public override void OnRescale(Scale scale)
         {
+            if(!enabled)
+                return;
             if(part.FindModelComponent<KSPParticleEmitter>() != null ||
                part.GetComponents<EffectBehaviour>()
                .Any(e => e is ModelMultiParticleFX || e is ModelParticleFX))
@@ -108,6 +110,8 @@ namespace AT_Utils
 
         public override void OnRescale(Scale scale)
         {
+            if(!enabled)
+                return;
             //no need to update resources on start
             //as they are persistent; less calculations
             if(scale.FirstTime)
@@ -144,7 +148,14 @@ namespace AT_Utils
         }
 
         public override void OnStart(StartState state) { base.OnStart(state); thrustDisplay = all_thrusts(); }
-        public override void OnRescale(Scale scale) { base.OnRescale(scale); thrustDisplay = all_thrusts(); }
+
+        public override void OnRescale(Scale scale)
+        {
+            if(!enabled)
+                return;
+            base.OnRescale(scale);
+            thrustDisplay = all_thrusts();
+        }
 
         protected override void on_rescale(ModulePair<ModuleRCS> mp, Scale scale)
         { mp.module.thrusterPower = mp.base_module.thrusterPower * scale.absolute.quad; }
@@ -247,7 +258,14 @@ namespace AT_Utils
         }
 
         public override void OnStart(StartState state) { base.OnStart(state); thrustDisplay = all_thrusts(); }
-        public override void OnRescale(Scale scale) { base.OnRescale(scale); thrustDisplay = all_thrusts(); }
+
+        public override void OnRescale(Scale scale)
+        {
+            if(!enabled)
+                return;
+            base.OnRescale(scale);
+            thrustDisplay = all_thrusts();
+        }
 
         protected override void on_rescale(ModulePair<ModuleEngines> mp, Scale scale)
         {
