@@ -82,6 +82,7 @@ namespace AT_Utils
         {
             if(!base.Init()) return false;
             priority = 100;
+            modules.Clear();
             var m = part.Modules.GetEnumerator();
             var b = base_part.Modules.GetEnumerator();
             while(b.MoveNext() && m.MoveNext())
