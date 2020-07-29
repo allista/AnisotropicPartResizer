@@ -25,8 +25,8 @@ namespace AT_Utils
 
         void rescale_and_brake_struts()
         {
-            Rescale();
             part.BreakConnectedCompoundParts();
+            Rescale();
         }
         protected override void on_aspect_changed() => rescale_and_brake_struts();
 
