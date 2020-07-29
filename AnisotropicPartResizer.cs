@@ -9,6 +9,7 @@
 // And on ideas drawn from the TweakScale plugin
 
 using System.Collections.Generic;
+using JetBrains.Annotations;
 using UnityEngine;
 
 namespace AT_Utils
@@ -19,14 +20,14 @@ namespace AT_Utils
         [KSPField(isPersistant = true, guiActiveEditor = true, guiName = "Size", guiFormat = "S4")]
         [UI_FloatEdit(scene = UI_Scene.Editor, minValue = 0.5f, maxValue = 10, incrementLarge = 1.0f, incrementSmall = 0.1f, incrementSlide = 0.001f, sigFigs = 4)]
         public float size = 1.0f;
+        [UsedImplicitly] private FloatFieldWatcher sizeWatcher;
 
         void rescale_and_brake_struts()
         {
             Rescale();
             part.BreakConnectedCompoundParts();
         }
-        protected virtual void on_size_changed(object value) => rescale_and_brake_struts();
-        protected override void on_aspect_changed(object value) => rescale_and_brake_struts();
+        protected override void on_aspect_changed() => rescale_and_brake_struts();
 
         //module config
         [KSPField] public bool sizeOnly;
@@ -206,15 +207,12 @@ namespace AT_Utils
                         maxAspect,
                         aspectStepLarge,
                         aspectStepSmall);
-                sizeField.OnValueModified += on_size_changed;
+                sizeWatcher = new FloatFieldWatcher(sizeField)
+                {
+                    epsilon = 1e-4f, onValueChanged = rescale_and_brake_struts
+                };
             }
             Rescale();
-        }
-
-        protected override void OnDestroy()
-        {
-            Fields[nameof(size)].OnValueModified -= on_size_changed;
-            base.OnDestroy();
         }
 
         public void Update()

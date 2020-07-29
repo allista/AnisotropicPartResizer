@@ -5,6 +5,7 @@
 //
 //  Copyright (c) 2016 Allis Tauri
 
+using JetBrains.Annotations;
 using UnityEngine;
 
 namespace AT_Utils
@@ -14,7 +15,8 @@ namespace AT_Utils
         [KSPField(isPersistant=true, guiActiveEditor=true, guiName="Aspect", guiFormat="S4")]
         [UI_FloatEdit(scene=UI_Scene.Editor, minValue=0.5f, maxValue=10, incrementLarge=1.0f, incrementSmall=0.1f, incrementSlide=0.001f, sigFigs = 4)]
         public float aspect = 1.0f;
-        protected abstract void on_aspect_changed(object value);
+        [UsedImplicitly] private FloatFieldWatcher aspectWatcher;
+        protected abstract void on_aspect_changed();
 
         [KSPField(isPersistant=false, guiActiveEditor=true, guiName="Mass")] 
         public string MassDisplay;
@@ -111,7 +113,6 @@ namespace AT_Utils
 
         protected virtual void OnDestroy()
         {
-            Fields[nameof(aspect)].OnValueModified -= on_aspect_changed;
             GameEvents.onEditorShipModified.Remove(UpdateGUI);
         }
 
@@ -148,7 +149,10 @@ namespace AT_Utils
                     init_limit(limits.minAspect, ref minAspect, Mathf.Min(aspect, orig_aspect));
                     init_limit(limits.maxAspect, ref maxAspect, Mathf.Max(aspect, orig_aspect));
                 }
-                Fields[nameof(aspect)].OnValueModified += on_aspect_changed;
+                aspectWatcher = new FloatFieldWatcher(Fields[nameof(aspect)])
+                {
+                    epsilon = 1e-4f, onValueChanged = on_aspect_changed
+                };
             }
             else 
                 UpdateDragCube();
