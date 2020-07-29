@@ -93,9 +93,10 @@ namespace AT_Utils
         private readonly HashSet<int> baseResources = new HashSet<int>();
         private float resourcesCost, baseResourcesCost;
 
-        public override void SaveDefaults()
+        public override bool Init()
         {
-            base.SaveDefaults();
+            if(!base.Init())
+                return false;
             resourcesCost = 0;
             baseResourcesCost = 0;
             baseResources.Clear();
@@ -106,6 +107,7 @@ namespace AT_Utils
                 baseResourcesCost += cost;
                 resourcesCost += cost;
             }
+            return baseResources.Count > 0;
         }
 
         public override void OnRescale(Scale scale)
