@@ -13,6 +13,8 @@ namespace AT_Utils
     {
         protected Part base_part => part.partInfo?.partPrefab ?? part;
 
+        protected bool initialized { get; private set; }
+
         public virtual bool Init() => true;
 
         public abstract void SaveDefaults();
@@ -20,8 +22,13 @@ namespace AT_Utils
         public override void OnStart(StartState state)
         {
             base.OnStart(state);
-            if(Init()) 
+            if(initialized)
+                return;
+            if(Init())
+            {
                 SaveDefaults();
+                initialized = true;
+            }
         }
     }
 
