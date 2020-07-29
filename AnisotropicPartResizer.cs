@@ -8,6 +8,7 @@
 // This code is based on Procedural Fairings plug-in by Alexey Volynskov, KzPartResizer class
 // And on ideas drawn from the TweakScale plugin
 
+using System;
 using System.Collections.Generic;
 using JetBrains.Annotations;
 using UnityEngine;
@@ -49,16 +50,27 @@ namespace AT_Utils
 
         void create_updaters()
         {
+            updaters.Clear();
+            var startState = part.GetModuleStartState();
             foreach(var updater_type in PartUpdater.UpdatersTypes)
             {
-                PartUpdater updater = updater_type.Value(part);
-                if(updater == null) continue;
-                if(updater.Init())
+                var updater = updater_type.Value(part);
+                if(updater == null)
+                    continue;
+                try
                 {
-                    updater.SaveDefaults();
-                    updaters.Add(updater);
+                    updater.OnStart(startState);
+                    if(updater.enabled)
+                    {
+                        updaters.Add(updater);
+                        continue;
+                    }
                 }
-                else part.RemoveModule(updater);
+                catch(Exception e)
+                {
+                    this.Error($"Error in OnStart of the {updater.GetID()}: {e}");
+                }
+                part.RemoveModule(updater);
             }
             updaters.Sort((a, b) => a.priority.CompareTo(b.priority));
         }
@@ -212,7 +224,7 @@ namespace AT_Utils
                     epsilon = 1e-4f, onValueChanged = rescale_and_brake_struts
                 };
             }
-            Rescale();
+            StartCoroutine(CallbackUtil.DelayedCallback(1, Rescale));
         }
 
         public void Update()
