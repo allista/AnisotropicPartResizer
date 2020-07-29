@@ -252,6 +252,7 @@ namespace AT_Utils
             old_local_scale = model.localScale;
             if(HighLogic.LoadedSceneIsFlight)
                 StartCoroutine(CallbackUtil.DelayedCallback(1, UpdateDragCube));
+            part.UpdatePartMenu(true);
             just_loaded = false;
         }
     }
