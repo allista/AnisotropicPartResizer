@@ -8,7 +8,9 @@
 // This code is based on Procedural Fairings plug-in by Alexey Volynskov, KzPartResizer class
 // And on ideas drawn from the TweakScale plugin
 
+using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 using UnityEngine;
 
 namespace AT_Utils
@@ -19,14 +21,14 @@ namespace AT_Utils
         [KSPField(isPersistant = true, guiActiveEditor = true, guiName = "Size", guiFormat = "S4")]
         [UI_FloatEdit(scene = UI_Scene.Editor, minValue = 0.5f, maxValue = 10, incrementLarge = 1.0f, incrementSmall = 0.1f, incrementSlide = 0.001f, sigFigs = 4)]
         public float size = 1.0f;
+        [UsedImplicitly] private FloatFieldWatcher sizeWatcher;
 
         void rescale_and_brake_struts()
         {
-            Rescale();
             part.BreakConnectedCompoundParts();
+            Rescale();
         }
-        protected virtual void on_size_changed(object value) => rescale_and_brake_struts();
-        protected override void on_aspect_changed(object value) => rescale_and_brake_struts();
+        protected override void on_aspect_changed() => rescale_and_brake_struts();
 
         //module config
         [KSPField] public bool sizeOnly;
@@ -48,16 +50,27 @@ namespace AT_Utils
 
         void create_updaters()
         {
+            updaters.Clear();
+            var startState = part.GetModuleStartState();
             foreach(var updater_type in PartUpdater.UpdatersTypes)
             {
-                PartUpdater updater = updater_type.Value(part);
-                if(updater == null) continue;
-                if(updater.Init())
+                var updater = updater_type.Value(part);
+                if(updater == null)
+                    continue;
+                try
                 {
-                    updater.SaveDefaults();
-                    updaters.Add(updater);
+                    updater.OnStart(startState);
+                    if(updater.enabled)
+                    {
+                        updaters.Add(updater);
+                        continue;
+                    }
                 }
-                else part.RemoveModule(updater);
+                catch(Exception e)
+                {
+                    this.Error($"Error in OnStart of the {updater.GetID()}: {e}");
+                }
+                part.RemoveModule(updater);
             }
             updaters.Sort((a, b) => a.priority.CompareTo(b.priority));
         }
@@ -206,15 +219,12 @@ namespace AT_Utils
                         maxAspect,
                         aspectStepLarge,
                         aspectStepSmall);
-                sizeField.OnValueModified += on_size_changed;
+                sizeWatcher = new FloatFieldWatcher(sizeField)
+                {
+                    epsilon = 1e-4f, onValueChanged = rescale_and_brake_struts
+                };
             }
-            Rescale();
-        }
-
-        protected override void OnDestroy()
-        {
-            Fields[nameof(size)].OnValueModified -= on_size_changed;
-            base.OnDestroy();
+            StartCoroutine(CallbackUtil.DelayedCallback(1, Rescale));
         }
 
         public void Update()
@@ -223,7 +233,7 @@ namespace AT_Utils
             {
                 if(old_local_scale != model.localScale)
                 {
-                    this.Log("Model local scale changed");
+                    this.Debug("Model local scale changed");
                     Rescale();
                 }
             }
@@ -242,6 +252,7 @@ namespace AT_Utils
             old_local_scale = model.localScale;
             if(HighLogic.LoadedSceneIsFlight)
                 StartCoroutine(CallbackUtil.DelayedCallback(1, UpdateDragCube));
+            part.UpdatePartMenu(true);
             just_loaded = false;
         }
     }

@@ -79,6 +79,8 @@ namespace AT_Utils
 
         public override void OnRescale(Scale scale)
         {
+            if(!enabled)
+                return;
             if(part.FindModelComponent<KSPParticleEmitter>() != null ||
                part.GetComponents<EffectBehaviour>()
                .Any(e => e is ModelMultiParticleFX || e is ModelParticleFX))
@@ -91,9 +93,10 @@ namespace AT_Utils
         private readonly HashSet<int> baseResources = new HashSet<int>();
         private float resourcesCost, baseResourcesCost;
 
-        public override void SaveDefaults()
+        public override bool Init()
         {
-            base.SaveDefaults();
+            if(!base.Init())
+                return false;
             resourcesCost = 0;
             baseResourcesCost = 0;
             baseResources.Clear();
@@ -104,10 +107,13 @@ namespace AT_Utils
                 baseResourcesCost += cost;
                 resourcesCost += cost;
             }
+            return baseResources.Count > 0;
         }
 
         public override void OnRescale(Scale scale)
         {
+            if(!enabled)
+                return;
             //no need to update resources on start
             //as they are persistent; less calculations
             if(scale.FirstTime)
@@ -143,8 +149,19 @@ namespace AT_Utils
                 .Trim(", ".ToCharArray());
         }
 
-        public override void OnStart(StartState state) { base.OnStart(state); thrustDisplay = all_thrusts(); }
-        public override void OnRescale(Scale scale) { base.OnRescale(scale); thrustDisplay = all_thrusts(); }
+        public override void OnStart(StartState state)
+        {
+            base.OnStart(state);
+            thrustDisplay = all_thrusts();
+        }
+
+        public override void OnRescale(Scale scale)
+        {
+            if(!enabled)
+                return;
+            base.OnRescale(scale);
+            thrustDisplay = all_thrusts();
+        }
 
         protected override void on_rescale(ModulePair<ModuleRCS> mp, Scale scale)
         { mp.module.thrusterPower = mp.base_module.thrusterPower * scale.absolute.quad; }
@@ -246,8 +263,19 @@ namespace AT_Utils
                 .Trim(", ".ToCharArray());
         }
 
-        public override void OnStart(StartState state) { base.OnStart(state); thrustDisplay = all_thrusts(); }
-        public override void OnRescale(Scale scale) { base.OnRescale(scale); thrustDisplay = all_thrusts(); }
+        public override void OnStart(StartState state)
+        {
+            base.OnStart(state);
+            thrustDisplay = all_thrusts();
+        }
+
+        public override void OnRescale(Scale scale)
+        {
+            if(!enabled)
+                return;
+            base.OnRescale(scale);
+            thrustDisplay = all_thrusts();
+        }
 
         protected override void on_rescale(ModulePair<ModuleEngines> mp, Scale scale)
         {
