@@ -25,7 +25,15 @@ namespace AT_Utils
 
         protected virtual bool Init() => true;
 
+        protected virtual void OnInit() {}
+
         protected abstract void SaveDefaults();
+
+        public override void OnLoad(ConfigNode node)
+        {
+            base.OnLoad(node);
+            SaveDefaults();
+        }
 
         public override void OnStart(StartState state)
         {
@@ -34,6 +42,7 @@ namespace AT_Utils
                 return;
             if(Init())
             {
+                OnInit();
                 SaveDefaults();
                 initialized = true;
             }

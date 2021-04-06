@@ -176,10 +176,15 @@ namespace AT_Utils
             }
         }
 
+        protected override void OnInit()
+        {
+            base.OnInit();
+            create_updaters();
+        }
+
         protected override void SaveDefaults()
         {
             old_size = size;
-            create_updaters();
             base.SaveDefaults();
         }
 

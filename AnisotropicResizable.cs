@@ -132,12 +132,12 @@ namespace AT_Utils
             old_aspect = aspect;
             update_orig_attrs();
             update_orig_mass_and_cost();
-            prepare_model();
         }
 
         public override void OnStart(StartState state)
         {
             base.OnStart(state);
+            prepare_model();
             if(state == StartState.Editor) 
             {
                 //init global limits
