@@ -93,7 +93,7 @@ namespace AT_Utils
         private readonly HashSet<int> baseResources = new HashSet<int>();
         private float resourcesCost, baseResourcesCost;
 
-        public override bool Init()
+        protected override bool Init()
         {
             if(!base.Init())
                 return false;

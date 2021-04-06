@@ -23,7 +23,7 @@ namespace AT_Utils
 
         protected bool initialized { get; private set; }
 
-        public virtual bool Init() => true;
+        protected virtual bool Init() => true;
 
         public abstract void SaveDefaults();
 
@@ -87,7 +87,7 @@ namespace AT_Utils
 
         protected readonly List<ModulePair<T>> modules = new List<ModulePair<T>>();
 
-        public override bool Init()
+        protected override bool Init()
         {
             if(!base.Init())
                 return false;
