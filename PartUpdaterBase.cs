@@ -25,7 +25,7 @@ namespace AT_Utils
 
         protected virtual bool Init() => true;
 
-        public abstract void SaveDefaults();
+        protected abstract void SaveDefaults();
 
         public override void OnStart(StartState state)
         {
@@ -46,7 +46,7 @@ namespace AT_Utils
     {
         public uint priority = 0; // 0 is highest
 
-        public override void SaveDefaults() { }
+        protected override void SaveDefaults() { }
 
         public abstract void OnRescale(Scale scale);
 

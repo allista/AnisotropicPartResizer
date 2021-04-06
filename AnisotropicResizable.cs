@@ -126,8 +126,8 @@ namespace AT_Utils
                 orig_aspect = resizer != null ? resizer.aspect : aspect;
             }
         }
-        
-        public override void SaveDefaults()
+
+        protected override void SaveDefaults()
         {
             old_aspect = aspect;
             update_orig_attrs();

@@ -176,7 +176,7 @@ namespace AT_Utils
             }
         }
 
-        public override void SaveDefaults()
+        protected override void SaveDefaults()
         {
             old_size = size;
             create_updaters();
