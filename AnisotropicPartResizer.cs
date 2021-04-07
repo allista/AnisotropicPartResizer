@@ -151,6 +151,7 @@ namespace AT_Utils
                 if(!scale.FirstTime)
                     part.UpdateAttachedPartPos(node);
             }
+            var partTransform = part.transform;
             //update this surface attach node
             if(part.srfAttachNode != null)
             {
@@ -159,8 +160,9 @@ namespace AT_Utils
                 //don't move the part at start, its position is persistant
                 if(!scale.FirstTime)
                 {
-                    Vector3 d_pos = part.transform.TransformDirection(part.srfAttachNode.position - old_position);
-                    part.transform.position -= d_pos;
+                    var d_pos =
+                        partTransform.TransformDirection(part.srfAttachNode.position - old_position);
+                    partTransform.position -= d_pos;
                 }
             }
             //no need to update surface attached parts on start
