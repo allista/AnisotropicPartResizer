@@ -158,7 +158,7 @@ namespace AT_Utils
                 var old_position = part.srfAttachNode.position;
                 part.srfAttachNode.position = scale.ScaleVector(part.srfAttachNode.originalPosition);
                 //don't move the part at start, its position is persistant
-                if(!scale.FirstTime)
+                if(!scale.FirstTime && part.srfAttachNode.attachedPart != null)
                 {
                     var d_pos =
                         partTransform.TransformDirection(part.srfAttachNode.position - old_position);
