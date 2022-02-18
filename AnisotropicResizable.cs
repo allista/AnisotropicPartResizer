@@ -126,18 +126,18 @@ namespace AT_Utils
                 orig_aspect = resizer != null ? resizer.aspect : aspect;
             }
         }
-        
-        public override void SaveDefaults()
+
+        protected override void SaveDefaults()
         {
             old_aspect = aspect;
             update_orig_attrs();
             update_orig_mass_and_cost();
-            prepare_model();
         }
 
         public override void OnStart(StartState state)
         {
             base.OnStart(state);
+            prepare_model();
             if(state == StartState.Editor) 
             {
                 //init global limits

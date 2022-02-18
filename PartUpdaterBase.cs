@@ -23,9 +23,17 @@ namespace AT_Utils
 
         protected bool initialized { get; private set; }
 
-        public virtual bool Init() => true;
+        protected virtual bool Init() => true;
 
-        public abstract void SaveDefaults();
+        protected virtual void OnInit() {}
+
+        protected abstract void SaveDefaults();
+
+        public override void OnLoad(ConfigNode node)
+        {
+            base.OnLoad(node);
+            SaveDefaults();
+        }
 
         public override void OnStart(StartState state)
         {
@@ -34,6 +42,7 @@ namespace AT_Utils
                 return;
             if(Init())
             {
+                OnInit();
                 SaveDefaults();
                 initialized = true;
             }
@@ -46,7 +55,7 @@ namespace AT_Utils
     {
         public uint priority = 0; // 0 is highest
 
-        public override void SaveDefaults() { }
+        protected override void SaveDefaults() { }
 
         public abstract void OnRescale(Scale scale);
 
@@ -87,7 +96,7 @@ namespace AT_Utils
 
         protected readonly List<ModulePair<T>> modules = new List<ModulePair<T>>();
 
-        public override bool Init()
+        protected override bool Init()
         {
             if(!base.Init())
                 return false;

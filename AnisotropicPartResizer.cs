@@ -25,8 +25,8 @@ namespace AT_Utils
 
         void rescale_and_brake_struts()
         {
-            part.BreakConnectedCompoundParts();
-            Rescale();
+            using(part.ReconnectCompoundParts())
+                Rescale();
         }
         protected override void on_aspect_changed() => rescale_and_brake_struts();
 
@@ -129,18 +129,20 @@ namespace AT_Utils
             update_attach_nodes(scale);
         }
 
-        void update_attach_nodes(Scale scale)
+        private void update_attach_nodes(Scale scale)
         {
             //update attach nodes and their parts
-            foreach(AttachNode node in part.attachNodes)
+            foreach(var node in part.attachNodes)
             {
                 //ModuleGrappleNode adds new AttachNode on dock
-                if(!orig_nodes.ContainsKey(node.id)) continue;
+                if(!orig_nodes.ContainsKey(node.id))
+                    continue;
                 //update node position
                 node.position = scale.ScaleVector(node.originalPosition);
                 //update node size
-                int new_size = orig_nodes[node.id].size + Mathf.RoundToInt(scale.size - scale.orig_size);
-                if(new_size < 0) new_size = 0;
+                var new_size = orig_nodes[node.id].size + Mathf.RoundToInt(scale.size - scale.orig_size);
+                if(new_size < 0)
+                    new_size = 0;
                 node.size = new_size;
                 //update node breaking forces
                 node.breakingForce = orig_nodes[node.id].breakingForce * scale.absolute.quad;
@@ -149,37 +151,46 @@ namespace AT_Utils
                 if(!scale.FirstTime)
                     part.UpdateAttachedPartPos(node);
             }
+            var partTransform = part.transform;
             //update this surface attach node
             if(part.srfAttachNode != null)
             {
-                Vector3 old_position = part.srfAttachNode.position;
+                var old_position = part.srfAttachNode.position;
                 part.srfAttachNode.position = scale.ScaleVector(part.srfAttachNode.originalPosition);
                 //don't move the part at start, its position is persistant
-                if(!scale.FirstTime)
+                if(!scale.FirstTime && part.srfAttachNode.attachedPart != null)
                 {
-                    Vector3 d_pos = part.transform.TransformDirection(part.srfAttachNode.position - old_position);
-                    part.transform.position -= d_pos;
+                    var d_pos =
+                        partTransform.TransformDirection(part.srfAttachNode.position - old_position);
+                    partTransform.position -= d_pos;
                 }
             }
             //no need to update surface attached parts on start
             //as their positions are persistant; less calculations
-            if(scale.FirstTime) return;
+            if(scale.FirstTime)
+                return;
             //update parts that are surface attached to this
-            foreach(Part child in part.children)
+            foreach(var child in part.children)
             {
-                if(child.srfAttachNode != null && child.srfAttachNode.attachedPart == part)
-                {
-                    Vector3 attachedPosition = child.transform.localPosition + child.transform.localRotation * child.srfAttachNode.position;
-                    Vector3 targetPosition = scale.ScaleVectorRelative(attachedPosition);
-                    child.transform.Translate(targetPosition - attachedPosition, part.transform);
-                }
+                if(child.srfAttachNode == null || child.srfAttachNode.attachedPart != part)
+                    continue;
+                var childTransform = child.transform;
+                var attachedPosition = childTransform.localPosition
+                                       + childTransform.localRotation * child.srfAttachNode.position;
+                var targetPosition = scale.ScaleVectorRelative(attachedPosition);
+                childTransform.Translate(targetPosition - attachedPosition, partTransform);
             }
         }
 
-        public override void SaveDefaults()
+        protected override void OnInit()
+        {
+            base.OnInit();
+            create_updaters();
+        }
+
+        protected override void SaveDefaults()
         {
             old_size = size;
-            create_updaters();
             base.SaveDefaults();
         }
 
