@@ -1,6 +1,6 @@
+# AnisotropicPartResizer ChangeLog
 
 v1.5.0 / 2022-02-14
-==================
 
   * AssemblyVersion
   * csproj: added NIGHTBUILD flag to debug configuration
@@ -13,7 +13,7 @@ v1.5.0 / 2022-02-14
   * KSP: reference changed 1.10.1 => 1.11.1
 
 v1.4.1 / 2020-07-31
-===================
+
 
   * AssemblyVersion: 1.4.1
   * RF
@@ -29,7 +29,6 @@ v1.4.1 / 2020-07-31
   * Changed references to KSP-1.9.1
 
 v1.4.0 / 2019-12-22
-===================
 
   * AssemblyVersion: 1.4.0
   * Retreive aspect/size fields once, then use them
@@ -48,7 +47,6 @@ v1.4.0 / 2019-12-22
   * Fixed NRE in JettisonUpdater
 
 v1.3.0.1 / 2019-11-07
-=====================
 
   * Set new UnityEngine.Module dlls as non-private: don't copy them to the output
   * Added required Unity-2019 Module dlls
@@ -58,7 +56,6 @@ v1.3.0.1 / 2019-11-07
   * Using KSPField.onFieldChange instead of Update to rescale the model
 
 v1.3.0 / 2019-05-26
-===================
 
   * AssemblyVersion: 1.3
   * Commented out debug logging
@@ -71,7 +68,6 @@ v1.3.0 / 2019-05-26
   * Changed references to KSP-1.6.0
 
 v1.2.0.4 / 2018-10-11
-=====================
 
   * Fixed issue AT_Utils#7: no need to move parts on first update.
   * Only udpate drag cubes in flight
@@ -88,14 +84,12 @@ v1.2.0.4 / 2018-10-11
   * Added UpdateDragCube method to use on size/shape change.
 
 v1.2.0.2 / 2017-06-04
-=====================
 
   * Changed version to 1.2.0.2
   * Changed references to KSP-1.3
   * Fixed the "Coroutine couldn't be started" bug.
 
 v1.2.0.1 / 2017-02-06
-=====================
 
   * Changed version to 1.2.0.1
   * Added nightbuilds.
@@ -104,7 +98,6 @@ v1.2.0.1 / 2017-02-06
   * Moved to fully-manual versioning to avoid unpredicted revision number changes.
 
 v1.2 / 2016-12-19
-=================
 
   * Updaters: del BaseConverter; add AsteroidDrill, ResourceHarvester, ResourceConverter.
   * Updated references to 1.2.2
@@ -114,7 +107,6 @@ v1.2 / 2016-12-19
   * Changed references to 1.2.1
 
 v1.1 / 2016-10-21
-=================
 
   * Now I can =)
   * Updated to KSP-1.2 API.
