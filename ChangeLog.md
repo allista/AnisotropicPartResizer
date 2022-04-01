@@ -1,4 +1,4 @@
-# AnisotropicPartResizer ChangeLog
+# Anisotropic Part Resizer Change Log
 
 ## v1.5.0 / 2022-02-14
 
